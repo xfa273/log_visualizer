@@ -1,0 +1,54 @@
+Entry 0:
+  count: 0
+  target_omega: 1.240 (raw: 1067366482)
+  actual_omega: -0.183 (raw: -1103408852)
+  p_term_omega: 3.362 (raw: 1079453853)
+  i_term_omega: 0.000 (raw: 0)
+  d_term_omega: -0.000 (raw: -2147483648)
+  motor_out_r: 3.362 (raw: 1079453853)
+  motor_out_l: 3.362 (raw: 1079453853)
+  timestamp: 16053
+
+Entry 1:
+  count: 1
+  target_omega: 1.240 (raw: 1067366482)
+  actual_omega: -0.183 (raw: -1103408852)
+  p_term_omega: 3.362 (raw: 1079453853)
+  i_term_omega: 0.000 (raw: 0)
+  d_term_omega: -0.000 (raw: -2147483648)
+  motor_out_r: 3.362 (raw: 1079453853)
+  motor_out_l: 3.362 (raw: 1079453853)
+  timestamp: 16054
+
+Entry 2:
+  count: 2
+  target_omega: 1.245 (raw: 1067378291)
+  actual_omega: -0.180 (raw: -1103398043)
+  p_term_omega: 3.375 (raw: 1079466662)
+  i_term_omega: 0.000 (raw: 0)
+  d_term_omega: -0.000 (raw: -2147483648)
+  motor_out_r: 3.375 (raw: 1079466662)
+  motor_out_l: 3.375 (raw: 1079466662)
+  timestamp: 16055
+
+Entry 3:
+  count: 3
+  target_omega: 1.250 (raw: 1067390100)
+  actual_omega: -0.177 (raw: -1103387234)
+  p_term_omega: 3.388 (raw: 1079479471)
+  i_term_omega: 0.000 (raw: 0)
+  d_term_omega: -0.000 (raw: -2147483648)
+  motor_out_r: 3.388 (raw: 1079479471)
+  motor_out_l: 3.388 (raw: 1079479471)
+  timestamp: 16056
+
+Entry 4:
+  count: 4
+  target_omega: 1.255 (raw: 1067401909)
+  actual_omega: -0.174 (raw: -1103376425)
+  p_term_omega: 3.401 (raw: 1079492280)
+  i_term_omega: 0.000 (raw: 0)
+  d_term_omega: -0.000 (raw: -2147483648)
+  motor_out_r: 3.401 (raw: 1079492280)
+  motor_out_l: 3.401 (raw: 1079492280)
+  timestamp: 16057
