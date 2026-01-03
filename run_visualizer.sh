@@ -9,6 +9,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_PY="$SCRIPT_DIR/venv/bin/python"
 APP="$SCRIPT_DIR/plot_visualizer.py"
+PNG_APP="$SCRIPT_DIR/png_visualizer.py"
 
 # macOSのバージョン互換モードでOSが古い番号に見えてabortすることがあるため無効化する
 export SYSTEM_VERSION_COMPAT=0
@@ -42,6 +43,20 @@ fi
 if [[ ! -f "$APP" ]]; then
   echo "[ERROR] Visualizer script not found: $APP" >&2
   exit 1
+fi
+
+# TkがOS要件等でabortする環境ではGUIが起動できないので、事前にTk生成を試してフォールバックする
+if ! env SYSTEM_VERSION_COMPAT=0 "$PY_BIN" -c 'import tkinter as tk; r=tk.Tk(); r.withdraw(); r.update(); r.destroy();' >/dev/null 2>&1; then
+  echo "[WARN] tkinter GUI is not available on this system. Falling back to PNG output." >&2
+  if [[ ! -f "$PNG_APP" ]]; then
+    echo "[ERROR] PNG visualizer script not found: $PNG_APP" >&2
+    exit 1
+  fi
+  if [[ $# -gt 0 ]]; then
+    exec env SYSTEM_VERSION_COMPAT=0 "$PY_BIN" "$PNG_APP" "$@"
+  else
+    exec env SYSTEM_VERSION_COMPAT=0 "$PY_BIN" "$PNG_APP" --latest
+  fi
 fi
 
 # Prefer loading file if user passed arguments; otherwise open with file chooser
