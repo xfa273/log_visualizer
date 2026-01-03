@@ -46,7 +46,7 @@ class LogVisualizer:
         """ファイルからデータをロード"""
         try:
             # データをロード（ヘッダーなしを想定）
-            self.data = pd.read_csv(file_path, header=None)
+            self.data = pd.read_csv(file_path, header=None, comment='#')
             
             # カラム数が8でない場合の処理
             if len(self.data.columns) != 8:

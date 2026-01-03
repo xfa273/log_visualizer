@@ -61,6 +61,38 @@ def _format_mtime(ts: float) -> str:
     return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
 
 
+def _extract_mm_columns(path: Path) -> Optional[List[str]]:
+    try:
+        with path.open("r", encoding="ascii", errors="ignore") as f:
+            for _ in range(200):
+                line = f.readline()
+                if not line:
+                    break
+                s = line.strip()
+                if s.startswith("#mm_columns="):
+                    cols = [c.strip() for c in s[len("#mm_columns=") :].split(",")]
+                    return cols
+
+        # 先頭に無い場合は末尾付近も見る（ログ末尾にメタ行を出す実装にも対応）
+        tail_bytes = 64 * 1024
+        with path.open("rb") as f2:
+            try:
+                f2.seek(0, os.SEEK_END)
+                size = f2.tell()
+                f2.seek(max(0, size - tail_bytes))
+            except Exception:
+                f2.seek(0)
+            tail = f2.read().decode("ascii", errors="ignore")
+        for line in reversed(tail.splitlines()):
+            s = line.strip()
+            if s.startswith("#mm_columns="):
+                cols = [c.strip() for c in s[len("#mm_columns=") :].split(",")]
+                return cols
+    except Exception:
+        pass
+    return None
+
+
 def _presets() -> Dict[str, List[str]]:
     return {
         "Default (param1..7)": [
@@ -216,14 +248,19 @@ def main() -> int:
     def _load_csv_cached(path_str: str):
         import pandas as pd
 
-        df0 = pd.read_csv(path_str, header=None)
-        return _coerce_8cols(df0)
+        p = Path(path_str)
+        mm_cols = _extract_mm_columns(p)
+        df0 = pd.read_csv(path_str, header=None, comment="#")
+        return _coerce_8cols(df0), mm_cols
 
-    df = _load_csv_cached(str(selected_csv))
+    df, mm_cols = _load_csv_cached(str(selected_csv))
 
     sidebar.header("Columns")
     preset_names = _presets()
-    preset_key = sidebar.selectbox("Preset", options=list(preset_names.keys()), index=1)
+    if mm_cols is not None and len(mm_cols) == 8:
+        preset_names = {"From log (#mm_columns)": mm_cols[1:], **preset_names}
+    preset_idx = 0 if (mm_cols is not None and len(mm_cols) == 8) else min(1, max(0, len(preset_names) - 1))
+    preset_key = sidebar.selectbox("Preset", options=list(preset_names.keys()), index=preset_idx)
 
     col_inputs: List[str] = []
     for i in range(7):
@@ -233,7 +270,10 @@ def main() -> int:
 
     sidebar.header("Plot")
     available_cols = [c for c in df_named.columns if c != "time_ms"]
-    selected_cols = sidebar.multiselect("Params", options=available_cols, default=available_cols)
+    default_cols = [c for c in available_cols if not c.startswith("unused")]
+    if not default_cols:
+        default_cols = available_cols
+    selected_cols = sidebar.multiselect("Params", options=available_cols, default=default_cols)
 
     plot_mode = sidebar.radio("Mode", options=["Overlay (single graph)", "Stacked (multiple graphs)"], index=0)
 

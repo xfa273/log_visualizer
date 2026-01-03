@@ -5,7 +5,7 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 
 def _default_logs_dir() -> Path:
@@ -27,11 +27,31 @@ def _find_latest_csv(logs_dir: Path) -> Optional[Path]:
     return files[0]
 
 
+def _extract_mm_columns(path: Path) -> Optional[List[str]]:
+    try:
+        with path.open("r", encoding="ascii", errors="ignore") as f:
+            for _ in range(200):
+                line = f.readline()
+                if not line:
+                    break
+                s = line.strip()
+                if s.startswith("#mm_columns="):
+                    cols = [c.strip() for c in s[len("#mm_columns=") :].split(",")]
+                    return cols
+    except Exception:
+        pass
+    return None
+
+
 def _load_csv(path: Path):
     import pandas as pd
 
     cols = ["time_ms", "param1", "param2", "param3", "param4", "param5", "param6", "param7"]
-    return pd.read_csv(path, header=None, names=cols)
+    df = pd.read_csv(path, header=None, names=cols, comment="#")
+    mm_cols = _extract_mm_columns(path)
+    if mm_cols is not None and len(mm_cols) == 8:
+        df.columns = ["time_ms"] + mm_cols[1:]
+    return df
 
 
 def main() -> int:
@@ -73,7 +93,7 @@ def main() -> int:
 
     fig, axes = plt.subplots(7, 1, figsize=(12, 10), sharex=True)
     for i in range(7):
-        col = f"param{i+1}"
+        col = df.columns[i + 1]
         axes[i].plot(df["time_ms"], df[col])
         axes[i].set_ylabel(col)
         axes[i].grid(True)
