@@ -23,6 +23,19 @@ if [[ ! -x "$PY_BIN" ]]; then
   fi
 fi
 
+# venvが存在しても、そのpython自体がOS要件で起動できない場合があるので実行テストする
+if [[ "$PY_BIN" == "$VENV_PY" ]]; then
+  if ! "$PY_BIN" -c 'import sys; sys.exit(0)' >/dev/null 2>&1; then
+    if command -v python3 >/dev/null 2>&1; then
+      PY_BIN="python3"
+      echo "[WARN] venv python failed to start. Falling back to system python3." >&2
+    else
+      echo "[ERROR] venv python failed to start, and python3 not available." >&2
+      exit 1
+    fi
+  fi
+fi
+
 if [[ ! -f "$APP" ]]; then
   echo "[ERROR] Visualizer script not found: $APP" >&2
   exit 1
