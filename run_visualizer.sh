@@ -10,6 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_PY="$SCRIPT_DIR/venv/bin/python"
 APP="$SCRIPT_DIR/plot_visualizer.py"
 PNG_APP="$SCRIPT_DIR/png_visualizer.py"
+WEB_APP="$SCRIPT_DIR/web_visualizer.py"
 
 # macOSのバージョン互換モードでOSが古い番号に見えてabortすることがあるため無効化する
 export SYSTEM_VERSION_COMPAT=0
@@ -38,6 +39,25 @@ if [[ "$PY_BIN" == "$VENV_PY" ]]; then
       exit 1
     fi
   fi
+fi
+
+if [[ $# -gt 0 && "$1" == "--web" ]]; then
+  shift
+  if [[ ! -f "$WEB_APP" ]]; then
+    echo "[ERROR] Web visualizer script not found: $WEB_APP" >&2
+    exit 1
+  fi
+  if ! "$PY_BIN" -c 'import streamlit, plotly' >/dev/null 2>&1; then
+    echo "[ERROR] Web dependencies are missing. Install requirements.txt" >&2
+    exit 1
+  fi
+
+  if [[ $# -gt 0 && -f "$1" ]]; then
+    export MICROMOUSE_WEB_DEFAULT_CSV="$1"
+  fi
+
+  # Streamlit must be run as a module/command; use python -m to respect selected interpreter
+  exec env SYSTEM_VERSION_COMPAT=0 "$PY_BIN" -m streamlit run "$WEB_APP" --server.headless false
 fi
 
 if [[ ! -f "$APP" ]]; then
