@@ -119,22 +119,30 @@ def _downsample(df, max_points: int):
 
 def _build_plot(df, y_cols: List[str], mode: str):
     import plotly.graph_objects as go
+    import plotly.express as px
     from plotly.subplots import make_subplots
 
     x = df["time_ms"]
+    palette = px.colors.qualitative.Plotly
 
     if mode == "Stacked (multiple graphs)":
         fig = make_subplots(rows=len(y_cols), cols=1, shared_xaxes=True, vertical_spacing=0.02)
         for i, col in enumerate(y_cols):
-            fig.add_trace(go.Scatter(x=x, y=df[col], mode="lines", name=col), row=i + 1, col=1)
+            color = palette[i % len(palette)]
+            fig.add_trace(
+                go.Scatter(x=x, y=df[col], mode="lines", name=col, line=dict(color=color)),
+                row=i + 1,
+                col=1,
+            )
             fig.update_yaxes(title_text=col, row=i + 1, col=1)
         fig.update_xaxes(title_text="time_ms", row=len(y_cols), col=1)
         fig.update_layout(height=max(450, 180 * len(y_cols)), margin=dict(l=40, r=20, t=40, b=40))
         return fig
 
     fig = go.Figure()
-    for col in y_cols:
-        fig.add_trace(go.Scatter(x=x, y=df[col], mode="lines", name=col))
+    for i, col in enumerate(y_cols):
+        color = palette[i % len(palette)]
+        fig.add_trace(go.Scatter(x=x, y=df[col], mode="lines", name=col, line=dict(color=color)))
     fig.update_layout(
         height=650,
         margin=dict(l=40, r=20, t=40, b=40),
