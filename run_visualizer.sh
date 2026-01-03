@@ -48,7 +48,12 @@ if [[ $# -gt 0 && "$1" == "--web" ]]; then
     exit 1
   fi
   if ! "$PY_BIN" -c 'import streamlit, plotly' >/dev/null 2>&1; then
-    echo "[ERROR] Web dependencies are missing. Install requirements.txt" >&2
+    echo "[ERROR] Web dependencies are missing (streamlit/plotly)." >&2
+    echo "[INFO] Python used: $PY_BIN" >&2
+    echo "[HINT] Install deps with:" >&2
+    echo "       $PY_BIN -m pip install -r \"$SCRIPT_DIR/requirements.txt\"" >&2
+    echo "[HINT] If pip is missing:" >&2
+    echo "       $PY_BIN -m ensurepip --upgrade" >&2
     exit 1
   fi
 
