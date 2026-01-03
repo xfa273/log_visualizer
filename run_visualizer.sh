@@ -10,6 +10,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_PY="$SCRIPT_DIR/venv/bin/python"
 APP="$SCRIPT_DIR/plot_visualizer.py"
 
+# macOSのバージョン互換モードでOSが古い番号に見えてabortすることがあるため無効化する
+export SYSTEM_VERSION_COMPAT=0
+
 PY_BIN="$VENV_PY"
 if [[ ! -x "$PY_BIN" ]]; then
   if command -v python3 >/dev/null 2>&1; then
@@ -25,7 +28,7 @@ fi
 
 # venvが存在しても、そのpython自体がOS要件で起動できない場合があるので実行テストする
 if [[ "$PY_BIN" == "$VENV_PY" ]]; then
-  if ! "$PY_BIN" -c 'import sys; sys.exit(0)' >/dev/null 2>&1; then
+  if ! env SYSTEM_VERSION_COMPAT=0 "$PY_BIN" -c 'import sys; sys.exit(0)' >/dev/null 2>&1; then
     if command -v python3 >/dev/null 2>&1; then
       PY_BIN="python3"
       echo "[WARN] venv python failed to start. Falling back to system python3." >&2
@@ -43,7 +46,7 @@ fi
 
 # Prefer loading file if user passed arguments; otherwise open with file chooser
 if [[ $# -gt 0 ]]; then
-  exec "$PY_BIN" "$APP" "$@"
+  exec env SYSTEM_VERSION_COMPAT=0 "$PY_BIN" "$APP" "$@"
 else
-  exec "$PY_BIN" "$APP"
+  exec env SYSTEM_VERSION_COMPAT=0 "$PY_BIN" "$APP"
 fi
