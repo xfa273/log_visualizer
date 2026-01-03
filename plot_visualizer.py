@@ -9,6 +9,7 @@ Micromouse Log Graphic Visualizer
 
 import os
 import sys
+import glob
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,10 +21,16 @@ import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 from datetime import datetime
 
-# 仮想環境のパスを追加
-venv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'venv/lib/python3.12/site-packages')
-if os.path.exists(venv_path):
-    sys.path.insert(0, venv_path)
+
+def _add_venv_site_packages_to_syspath() -> None:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = glob.glob(os.path.join(script_dir, 'venv', 'lib', 'python*', 'site-packages'))
+    for p in sorted(candidates):
+        if os.path.isdir(p) and p not in sys.path:
+            sys.path.insert(0, p)
+
+
+_add_venv_site_packages_to_syspath()
 
 class LogVisualizer:
     """ログデータのグラフィカル可視化クラス"""
@@ -124,9 +131,27 @@ class LogVisualizerApp:
         self.current_file = None
         
         # 最近ファイル一覧の基準フォルダ（既定はツール内 logs、なければWS内 logs）
-        self.recent_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
-        if not os.path.isdir(self.recent_dir):
-            self.recent_dir = os.path.expanduser('~/STM32Workspace/micromouse_log_visualizer/logs')
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        env_dir = os.environ.get('MICROMOUSE_LOG_DIR')
+        candidates = []
+        if env_dir:
+            candidates.append(os.path.expanduser(env_dir))
+        if sys.platform == 'darwin':
+            candidates.append(os.path.expanduser('~/Documents/micromouse_logs'))
+        candidates.append(os.path.join(script_dir, 'logs'))
+
+        self.recent_dir = None
+        for d in candidates:
+            if os.path.isdir(d):
+                self.recent_dir = d
+                break
+        if self.recent_dir is None:
+            self.recent_dir = candidates[0] if candidates else os.path.expanduser('~')
+
+        try:
+            os.makedirs(self.recent_dir, exist_ok=True)
+        except Exception:
+            pass
         
         # GUIの初期化
         self._setup_gui()

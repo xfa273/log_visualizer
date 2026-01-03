@@ -10,10 +10,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_PY="$SCRIPT_DIR/venv/bin/python"
 APP="$SCRIPT_DIR/plot_visualizer.py"
 
-if [[ ! -x "$VENV_PY" ]]; then
-  echo "[ERROR] Python venv not found or not executable: $VENV_PY" >&2
-  echo "Please create or fix the virtual environment under: $SCRIPT_DIR/venv" >&2
-  exit 1
+PY_BIN="$VENV_PY"
+if [[ ! -x "$PY_BIN" ]]; then
+  if command -v python3 >/dev/null 2>&1; then
+    PY_BIN="python3"
+    echo "[WARN] venv not found. Falling back to system python3." >&2
+    echo "[HINT] If dependencies are missing, create venv under: $SCRIPT_DIR/venv" >&2
+  else
+    echo "[ERROR] Python venv not found and python3 not available." >&2
+    echo "Please install python3 or create venv under: $SCRIPT_DIR/venv" >&2
+    exit 1
+  fi
 fi
 
 if [[ ! -f "$APP" ]]; then
@@ -23,7 +30,7 @@ fi
 
 # Prefer loading file if user passed arguments; otherwise open with file chooser
 if [[ $# -gt 0 ]]; then
-  exec "$VENV_PY" "$APP" "$@"
+  exec "$PY_BIN" "$APP" "$@"
 else
-  exec "$VENV_PY" "$APP"
+  exec "$PY_BIN" "$APP"
 fi
