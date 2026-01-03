@@ -61,8 +61,11 @@ if [[ $# -gt 0 && "$1" == "--web" ]]; then
     export MICROMOUSE_WEB_DEFAULT_CSV="$1"
   fi
 
+  # Streamlitの利用統計/オンボーディングを無効化（初回のメール入力プロンプトを避ける）
+  export STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+
   # Streamlit must be run as a module/command; use python -m to respect selected interpreter
-  exec env SYSTEM_VERSION_COMPAT=0 "$PY_BIN" -m streamlit run "$WEB_APP" --server.headless false
+  exec env SYSTEM_VERSION_COMPAT=0 "$PY_BIN" -m streamlit run "$WEB_APP" --server.headless false --browser.gatherUsageStats false
 fi
 
 if [[ ! -f "$APP" ]]; then
