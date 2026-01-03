@@ -275,7 +275,7 @@ def main() -> int:
             try:
                 png_bytes = fig.to_image(format="png")
             except Exception:
-                st.error("PNG出力には kaleido が必要です。例: pip install kaleido")
+                st.error("PNG出力には kaleido が必要です。kaleido 1.x の場合は Google Chrome も必要です（plotly_get_chrome）。")
                 return 0
 
             out_path.write_bytes(png_bytes)
@@ -294,7 +294,7 @@ def main() -> int:
             png_bytes2 = fig.to_image(format="png")
             st.download_button("Download PNG", data=png_bytes2, file_name=f"{selected_csv.stem}.png", mime="image/png")
         except Exception:
-            st.info("Downloadボタンも kaleido が必要です。")
+            st.info("Downloadボタンも kaleido が必要です。kaleido 1.x の場合は Google Chrome も必要です（plotly_get_chrome）。")
 
     return 0
 
